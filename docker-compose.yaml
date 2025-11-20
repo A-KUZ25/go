@@ -1,0 +1,43 @@
+services:
+  mysql:
+    image: mysql:8
+    container_name: go-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: testdb
+    ports:
+      - "3306:3306"
+    volumes:
+      - go_mysql_data:/var/lib/mysql
+
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: go-migrate
+    depends_on:
+      - mysql
+    environment:
+      DB_DSN: "root:password@tcp(mysql:3306)/testdb?charset=utf8mb4&parseTime=true&loc=Local"
+    command: ["./migrate"]
+    volumes:
+      - ./migrations:/app/migrations
+
+  go-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: go-api
+    depends_on:
+      - mysql
+    environment:
+      DB_DSN: "root:password@tcp(mysql:3306)/testdb?charset=utf8mb4&parseTime=true&loc=Local"
+    ports:
+      - "8080:8080"
+    restart: always
+    volumes:
+      - ./migrations:/app/migrations
+
+volumes:
+  go_mysql_data:
