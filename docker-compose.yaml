@@ -18,8 +18,10 @@ services:
     container_name: go-migrate
     depends_on:
       - mysql
+    env_file:
+      - .env
     environment:
-      DB_DSN: "root:password@tcp(mysql:3306)/testdb?charset=utf8mb4&parseTime=true&loc=Local"
+      DB_DSN: ${DB_DSN_DOCKER}
     command: ["./migrate"]
     volumes:
       - ./migrations:/app/migrations
@@ -31,8 +33,10 @@ services:
     container_name: go-api
     depends_on:
       - mysql
+    env_file:
+      - .env
     environment:
-      DB_DSN: "root:password@tcp(mysql:3306)/testdb?charset=utf8mb4&parseTime=true&loc=Local"
+      DB_DSN: ${DB_DSN_DOCKER}
     ports:
       - "8080:8080"
     restart: always
@@ -41,3 +45,4 @@ services:
 
 volumes:
   go_mysql_data:
+

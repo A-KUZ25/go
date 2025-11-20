@@ -8,8 +8,10 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
-	"test-go/internal/dbConn"
+	"test-go/internal/connection"
 	"time"
+
+	"github.com/joho/godotenv"
 )
 
 type Migration struct {
@@ -122,7 +124,10 @@ func applyMigration(db *sql.DB, m Migration) error {
 }
 
 func main() {
-	db, err := dbConn.NewDB()
+
+	_ = godotenv.Load()
+
+	db, err := connection.NewDB()
 	if err != nil {
 		log.Fatalf("failed to init db: %v", err)
 	}

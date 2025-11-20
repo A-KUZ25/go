@@ -1,4 +1,4 @@
-package dbConn
+package connection
 
 import (
 	"database/sql"
@@ -11,7 +11,10 @@ import (
 func NewDB() (*sql.DB, error) {
 	dsn := os.Getenv("DB_DSN")
 	if dsn == "" {
-		return nil, fmt.Errorf("DB_DSN is not set")
+		dsn = os.Getenv("DB_DSN_LOCAL")
+	}
+	if dsn == "" {
+		return nil, fmt.Errorf("no DSN found")
 	}
 
 	db, err := sql.Open("mysql", dsn)
