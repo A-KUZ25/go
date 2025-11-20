@@ -6,6 +6,8 @@ import (
 	"test-go/internal/connection"
 	"test-go/internal/orders"
 
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"github.com/joho/godotenv"
 )
 
@@ -26,22 +28,20 @@ func main() {
 	service := orders.NewService(repo)
 	handler := orders.NewHandler(service)
 
-	http.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
+	r := chi.NewRouter()
+
+	r.Use(middleware.Logger)
+	r.Use(middleware.Recoverer)
+
+	r.Get("/ping", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(`{"status":"ok"}`))
 	})
 
-	http.HandleFunc("/orders", func(w http.ResponseWriter, r *http.Request) {
-		switch r.Method {
-		case http.MethodGet:
-			handler.List(w, r)
-		case http.MethodPost:
-			handler.Create(w, r)
-		default:
-			http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
-		}
+	r.Route("/orders", func(r chi.Router) {
+		r.Get("/", handler.List)
+		r.Post("/", handler.Create)
 	})
 
 	log.Println("server started on :8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	http.ListenAndServe(":8080", r)
 }
